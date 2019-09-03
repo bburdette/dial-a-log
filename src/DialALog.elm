@@ -1,4 +1,4 @@
-module DialALog exposing (DMsg(..), Dialog(..), dmMap, duMap, render)
+module DialALog exposing (DMsg(..), Dialog(..), dcMap, dmMap, duMap, render)
 
 import Element exposing (Element)
 
@@ -51,6 +51,24 @@ dmMap da fab =
 
         Render ->
             Render
+
+
+{-| map for the returned command.
+-}
+dcMap : Dialog am ac -> (ac -> bc) -> Dialog am bc
+dcMap dlg resmap =
+    case dlg of
+        Dialog d ->
+            Dialog <|
+                \m ->
+                    let
+                        ( ndlg, cmd ) =
+                            d m
+                    in
+                    ( dcMap ndlg resmap, resmap cmd )
+
+        Rendering r ->
+            Rendering r
 
 
 {-| map to adapt a dialog to a new setting.
