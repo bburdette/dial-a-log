@@ -55,15 +55,15 @@ dmsgMap da fab =
 
 {-| map for just the incoming message.
 -}
-dmMap : Dialog am ac -> (bm -> am) -> (am -> bm) -> Dialog bm ac
-dmMap dlg inmap outmap =
-    duMap dlg inmap outmap identity
+dmMap : (bm -> am) -> (am -> bm) -> Dialog am ac -> Dialog bm ac
+dmMap inmap outmap dlg =
+    duMap inmap outmap identity dlg
 
 
 {-| map for the returned command.
 -}
-dcMap : Dialog am ac -> (ac -> bc) -> Dialog am bc
-dcMap dlg resmap =
+dcMap : (ac -> bc) -> Dialog am ac -> Dialog am bc
+dcMap resmap dlg =
     case dlg of
         Dialog d ->
             Dialog <|
@@ -72,7 +72,7 @@ dcMap dlg resmap =
                         ( ndlg, cmd ) =
                             d m
                     in
-                    ( dcMap ndlg resmap, resmap cmd )
+                    ( dcMap resmap ndlg, resmap cmd )
 
         Rendering r ->
             Rendering r
@@ -83,8 +83,8 @@ inmap : function from the DialogFn msg to the new message type.
 outmap : maps from the new message type to the DialogFn msg.
 resmap : maps the DialogFn cmd to the new cmd type.
 -}
-duMap : Dialog am ac -> (bm -> am) -> (am -> bm) -> (ac -> bc) -> Dialog bm bc
-duMap dlg inmap outmap resmap =
+duMap : (bm -> am) -> (am -> bm) -> (ac -> bc) -> Dialog am ac -> Dialog bm bc
+duMap inmap outmap resmap dlg =
     case dlg of
         Dialog dupA ->
             Dialog
@@ -93,7 +93,7 @@ duMap dlg inmap outmap resmap =
                         ( newDupA, rmsg ) =
                             dupA (dmsgMap dmsgB inmap)
                     in
-                    ( duMap newDupA inmap outmap resmap, resmap rmsg )
+                    ( duMap inmap outmap resmap newDupA, resmap rmsg )
                 )
 
         Rendering elt ->
