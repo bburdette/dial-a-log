@@ -1,4 +1,4 @@
-module DialALog exposing (DMsg(..), Dialog(..), dcMap, dmMap, duMap, render)
+module DialALog exposing (DMsg(..), Dialog(..), DialogFn, dcMap, dmMap, dmsgMap, duMap, render)
 
 import Element exposing (Element)
 
@@ -43,14 +43,21 @@ render dlg =
 
 {-| map ftn for DMsg.
 -}
-dmMap : DMsg a -> (a -> b) -> DMsg b
-dmMap da fab =
+dmsgMap : DMsg a -> (a -> b) -> DMsg b
+dmsgMap da fab =
     case da of
         Msg ma ->
             Msg (fab ma)
 
         Render ->
             Render
+
+
+{-| map for just the incoming message.
+-}
+dmMap : Dialog am ac -> (bm -> am) -> (am -> bm) -> Dialog bm ac
+dmMap dlg inmap outmap =
+    duMap dlg inmap outmap identity
 
 
 {-| map for the returned command.
@@ -84,7 +91,7 @@ duMap dlg inmap outmap resmap =
                 (\dmsgB ->
                     let
                         ( newDupA, rmsg ) =
-                            dupA (dmMap dmsgB inmap)
+                            dupA (dmsgMap dmsgB inmap)
                     in
                     ( duMap newDupA inmap outmap resmap, resmap rmsg )
                 )
